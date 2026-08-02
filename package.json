@@ -10,7 +10,8 @@
     ".": "./src/index.ts",
     "./skill": "./src/skillBomModel.ts",
     "./skill-template": "./src/skillBomTemplate.ts",
-    "./agent-builder": "./src/agentBuilder.ts"
+    "./agent-builder": "./src/agentBuilder.ts",
+    "./registry": "./src/registry.ts"
   },
   "files": [
     "src"
@@ -18,5 +19,8 @@
   "dependencies": {
     "yaml": "^2.5.0",
     "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2"
   }
 }

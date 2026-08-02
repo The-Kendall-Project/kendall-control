@@ -33,6 +33,10 @@ import { agentPackageInputSchema, checkTier1Conformance, buildAgentBom } from "@
 // Skill BoM ("Skill Context Block", KF-SKL-OPS-001)
 import { normalizeSkillBom, checkSkillConformance, TAG_CATEGORIES } from "@kendall/ops-core/skill";
 import { skillBomToYaml } from "@kendall/ops-core/skill-template";
+
+// Cross-system registry SDK (part numbers + shared agent/skill/system registry)
+import { issuePartNumber, registerAgent, listRegisteredAgents } from "@kendall/ops-core/registry";
+// Set CONTROL_PLANE_URL + CONTROL_PLANE_ANON_KEY; all fns return null when unset.
 ```
 
 ## What's inside
@@ -44,6 +48,7 @@ import { skillBomToYaml } from "@kendall/ops-core/skill-template";
 | `/agent-builder` | `agentBuilder` | `agentPackageInputSchema`, `checkTier1Conformance`, `buildAgentBom`, `renderAgentPackageFiles` | Canonical 14-part agent + AI-BoM generator (deps: `zod`, `yaml`) |
 | `/skill` | `skillBomModel` | `normalizeSkillBom`, `checkSkillConformance`, `skillNumber`, `TAG_CATEGORIES`, `SkillBom`, … | Skill Context Block schema, zero deps |
 | `/skill-template` | `skillBomTemplate` | `skillBomToYaml`, `skillBomToJson`, `blankSkillTemplate` | skill.bom.yaml serializer |
+| `/registry` | `registry` | `issuePartNumber`, `deriveQcPartNumber`, `deriveSkillSlug`, `registerAgent`, `registerSkill`, `listSystems`, `listRegisteredAgents`, `listRegisteredSkills` | Cross-system registry SDK (fetch-only, graceful-degrade; `CONTROL_PLANE_URL`/`ANON_KEY`) |
 
 ## Roadmap
 
@@ -53,9 +58,9 @@ Migrate the rest of the shared core here, in dependency order:
 2. ✅ **Agent Builder schema + generator** — from Foundry `packages/domain/src/agent-builder`
    (Zod schema, conformance gate, `buildAgentBom`) → `/agent-builder`
 3. ✅ **Skill BoM core** — Skill Context Block (KF-SKL-OPS-001) → `/skill` + `/skill-template`
-4. ⬜ **Registry SDK + part-number issuing** — the typed client to the kendall-control
+4. ✅ **Registry SDK + part-number issuing** — the typed client to the kendall-control
    Supabase backend (agents/skills/systems registry, `issuePartNumber`, `registerAgent`/
-   `registerSkill`), from Foundry `packages/db/src/control-plane.ts`
+   `registerSkill`), from Foundry `packages/db/src/control-plane.ts` → `/registry`
 5. ⬜ **Audit + Job Runs contracts** — the observability spine (from kendall-ops `src/ops/activity.ts`)
 6. ⬜ **Flow renderers** — `AgentFlowchart`, `WorkflowMap`, `workflows` (React peer dep)
 
