@@ -19,27 +19,45 @@ Bump `<sha>` to adopt a new version. Keep every consumer on the same SHA to stay
 
 ## Usage
 
+The Agent BoM core is the default export; the agent-builder and skill modules are
+subpaths (so their names can't collide with the BoM core's).
+
 ```ts
+// Agent BoM core
 import { normalizeBom, blankBomTemplate, bomToMarkdown } from "@kendall/ops-core";
 import type { AgentBom, ComponentType } from "@kendall/ops-core";
+
+// Canonical 14-part Agent schema + conformance gate + generator (from Foundry)
+import { agentPackageInputSchema, checkTier1Conformance, buildAgentBom } from "@kendall/ops-core/agent-builder";
+
+// Skill BoM ("Skill Context Block", KF-SKL-OPS-001)
+import { normalizeSkillBom, checkSkillConformance, TAG_CATEGORIES } from "@kendall/ops-core/skill";
+import { skillBomToYaml } from "@kendall/ops-core/skill-template";
 ```
 
 ## What's inside
 
-| Module | Exports | Notes |
-| --- | --- | --- |
-| `bomModel` | `normalizeBom`, `classifyComponentType`, `defaultBomFromAgent`, `AgentBom`, `ComponentType`, `AuthorityAction`, … | Pure schema + normalizer, zero runtime deps |
-| `bomTemplate` | `blankBomTemplate`, `blankTemplatesAll`, `bomToJson`, `bomToMarkdown`, `TEMPLATE_ID` | Blank scaffolds + JSON/Markdown serializers |
+| Subpath | Module | Exports | Notes |
+| --- | --- | --- | --- |
+| `.` | `bomModel` | `normalizeBom`, `classifyComponentType`, `AgentBom`, `ComponentType`, … | Pure schema + normalizer, zero deps |
+| `.` | `bomTemplate` | `blankBomTemplate`, `bomToJson`, `bomToMarkdown`, `TEMPLATE_ID` | Blank scaffolds + serializers |
+| `/agent-builder` | `agentBuilder` | `agentPackageInputSchema`, `checkTier1Conformance`, `buildAgentBom`, `renderAgentPackageFiles` | Canonical 14-part agent + AI-BoM generator (deps: `zod`, `yaml`) |
+| `/skill` | `skillBomModel` | `normalizeSkillBom`, `checkSkillConformance`, `skillNumber`, `TAG_CATEGORIES`, `SkillBom`, … | Skill Context Block schema, zero deps |
+| `/skill-template` | `skillBomTemplate` | `skillBomToYaml`, `skillBomToJson`, `blankSkillTemplate` | skill.bom.yaml serializer |
 
 ## Roadmap
 
 Migrate the rest of the shared core here, in dependency order:
 
 1. ✅ **BoM core** — `bomModel` + `bomTemplate`
-2. ⬜ **Agent Builder schema + generator** — from Foundry `packages/domain/src/agent-builder`
-   (Zod schema, conformance gate, `buildAgentBom`)
-3. ⬜ **Flow renderers** — `AgentFlowchart`, `WorkflowMap`, `workflows` (React; add a
-   `react` peer dependency when these land)
+2. ✅ **Agent Builder schema + generator** — from Foundry `packages/domain/src/agent-builder`
+   (Zod schema, conformance gate, `buildAgentBom`) → `/agent-builder`
+3. ✅ **Skill BoM core** — Skill Context Block (KF-SKL-OPS-001) → `/skill` + `/skill-template`
+4. ⬜ **Registry SDK + part-number issuing** — the typed client to the kendall-control
+   Supabase backend (agents/skills/systems registry, `issuePartNumber`, `registerAgent`/
+   `registerSkill`), from Foundry `packages/db/src/control-plane.ts`
+5. ⬜ **Audit + Job Runs contracts** — the observability spine (from kendall-ops `src/ops/activity.ts`)
+6. ⬜ **Flow renderers** — `AgentFlowchart`, `WorkflowMap`, `workflows` (React peer dep)
 
 Prove each module round-trips through one consumer (SHA-pinned install → app compiles)
 before migrating the next.
