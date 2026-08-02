@@ -119,7 +119,7 @@ function toRegistryEntry(row: RawRegistryRow): ControlPlaneRegistryEntry {
 }
 
 async function callRegistryRpc(
-  rpc: "register_agent" | "register_skill",
+  rpc: "register_agent" | "register_skill" | "register_module",
   body: Record<string, unknown>,
   env: NodeJS.ProcessEnv,
 ): Promise<ControlPlaneRegistryEntry | null> {
@@ -448,4 +448,128 @@ export async function listRegisteredSkills(
     env,
   );
   return rows ? rows.map((row) => toSkill(row as RawSkillRow)) : null;
+}
+
+/** True when the Control Plane env is configured (for callers to branch on before fetching). */
+export function controlPlaneConfigured(env: NodeJS.ProcessEnv = process.env): boolean {
+  return resolveControlPlaneConfig(env) !== null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Software modules (KF-MOD) — reusable code packages (e.g. this one) *
+ * as first-class registry items alongside agents + skills.          *
+ * ------------------------------------------------------------------ */
+
+/** A software module recorded in the Control Plane's `modules_registry`. */
+export interface ControlPlaneModule {
+  readonly id: string;
+  readonly partNumber: string;
+  readonly name: string;
+  readonly slug: string;
+  readonly currentVersion: string;
+  readonly status: string;
+  readonly description: string | null;
+  readonly repoUrl: string | null;
+  readonly owningSystemKey: string | null;
+  readonly owningSystemName: string | null;
+  readonly createdAt: string;
+}
+
+interface RawModuleRow {
+  readonly id: string;
+  readonly part_number: string;
+  readonly name: string;
+  readonly slug: string;
+  readonly current_version: string;
+  readonly status: string;
+  readonly description: string | null;
+  readonly repo_url: string | null;
+  readonly created_at: string;
+  readonly owning_system: unknown;
+}
+
+function toModule(row: RawModuleRow): ControlPlaneModule {
+  const system = embeddedSystem(row.owning_system);
+  return {
+    id: row.id,
+    partNumber: row.part_number,
+    name: row.name,
+    slug: row.slug,
+    currentVersion: row.current_version,
+    status: row.status,
+    description: row.description,
+    repoUrl: row.repo_url,
+    owningSystemKey: system?.key ?? null,
+    owningSystemName: system?.name ?? null,
+    createdAt: row.created_at,
+  };
+}
+
+/**
+ * Reading modules distinguishes "unconfigured" (env unset) from "pending"
+ * (modules_registry not migrated yet — PostgREST 404) so a UI can prompt for the
+ * right fix, rather than collapsing both to null like the agent/skill reads.
+ */
+export type ModulesResult =
+  | { readonly state: "unconfigured" }
+  | { readonly state: "pending" }
+  | { readonly state: "ok"; readonly modules: readonly ControlPlaneModule[] };
+
+export async function listRegisteredModules(env: NodeJS.ProcessEnv = process.env): Promise<ModulesResult> {
+  const controlPlane = resolveControlPlaneConfig(env);
+  if (!controlPlane) return { state: "unconfigured" };
+
+  const response = await fetch(
+    `${controlPlane.url}/rest/v1/modules_registry?select=id,part_number,name,slug,current_version,status,description,repo_url,created_at,owning_system:systems(key,name)&order=part_number.asc`,
+    { headers: { apikey: controlPlane.anonKey, authorization: `Bearer ${controlPlane.anonKey}` } },
+  );
+
+  if (!response.ok) {
+    const detail = await response.text();
+    // A not-yet-created table (modules_registry before its migration) is a known,
+    // recoverable state — surface it as "pending" rather than an error.
+    if (response.status === 404 || detail.includes("PGRST205") || detail.includes("42P01")) {
+      return { state: "pending" };
+    }
+    throw new Error(`CONTROL_PLANE_SELECT_FAILED: ${response.status} ${detail}`);
+  }
+  const rows: unknown = await response.json();
+  if (!Array.isArray(rows)) throw new Error("CONTROL_PLANE_SELECT_FAILED: expected an array response");
+  return { state: "ok", modules: rows.map((row) => toModule(row as RawModuleRow)) };
+}
+
+/**
+ * Register (upsert) a software module into the shared `modules_registry`. Same
+ * best-effort/graceful-degrade contract as registerAgent/registerSkill. The
+ * server RPC upserts on (owning_system_id, slug).
+ */
+export async function registerModule(
+  args: {
+    readonly partNumber: string;
+    readonly name: string;
+    readonly slug: string;
+    readonly owningSystemKey: string;
+    readonly currentVersion?: string;
+    readonly status?: string;
+    readonly repoUrl?: string;
+    readonly specRef?: string;
+    readonly description?: string;
+  },
+  env: NodeJS.ProcessEnv = process.env,
+): Promise<ControlPlaneRegistryEntry | null> {
+  return callRegistryRpc(
+    "register_module",
+    {
+      p_part_number: args.partNumber,
+      p_name: args.name,
+      p_slug: args.slug,
+      p_owning_system_key: args.owningSystemKey,
+      p_current_version: args.currentVersion ?? "0.1.0",
+      p_status: args.status ?? "draft",
+      p_repo_url: args.repoUrl ?? null,
+      p_spec_ref: args.specRef ?? null,
+      p_description: args.description ?? null,
+    },
+    env,
+  );
 }

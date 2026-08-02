@@ -48,7 +48,7 @@ import { issuePartNumber, registerAgent, listRegisteredAgents } from "@kendall/o
 | `/agent-builder` | `agentBuilder` | `agentPackageInputSchema`, `checkTier1Conformance`, `buildAgentBom`, `renderAgentPackageFiles` | Canonical 14-part agent + AI-BoM generator (deps: `zod`, `yaml`) |
 | `/skill` | `skillBomModel` | `normalizeSkillBom`, `checkSkillConformance`, `skillNumber`, `TAG_CATEGORIES`, `SkillBom`, … | Skill Context Block schema, zero deps |
 | `/skill-template` | `skillBomTemplate` | `skillBomToYaml`, `skillBomToJson`, `blankSkillTemplate` | skill.bom.yaml serializer |
-| `/registry` | `registry` | `issuePartNumber`, `deriveQcPartNumber`, `deriveSkillSlug`, `registerAgent`, `registerSkill`, `listSystems`, `listRegisteredAgents`, `listRegisteredSkills` | Cross-system registry SDK (fetch-only, graceful-degrade; `CONTROL_PLANE_URL`/`ANON_KEY`) |
+| `/registry` | `registry` | `issuePartNumber`, `deriveQcPartNumber`, `deriveSkillSlug`, `controlPlaneConfigured`, `registerAgent`/`registerSkill`/`registerModule`, `listSystems`/`listRegisteredAgents`/`listRegisteredSkills`/`listRegisteredModules` | Cross-system registry SDK — agents + skills + software modules (KF-MOD). Fetch-only, graceful-degrade; `CONTROL_PLANE_URL`/`ANON_KEY` |
 
 ## Roadmap
 
