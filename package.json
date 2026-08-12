@@ -1,6 +1,6 @@
 {
   "name": "@kendall/ops-core",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Kendall control plane — the shared config-driven core (BoM model, templates, agent schema, skill schema, flow) imported by every Kendall app.",
   "license": "UNLICENSED",
   "type": "module",
@@ -11,7 +11,8 @@
     "./skill": "./src/skillBomModel.ts",
     "./skill-template": "./src/skillBomTemplate.ts",
     "./agent-builder": "./src/agentBuilder.ts",
-    "./registry": "./src/registry.ts"
+    "./registry": "./src/registry.ts",
+    "./aos": "./src/aos.ts"
   },
   "files": [
     "src"
@@ -21,6 +22,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/node": "^26.1.2"
+    "@types/node": "^26.1.2",
+    "typescript": "^5.9.3"
   }
 }
