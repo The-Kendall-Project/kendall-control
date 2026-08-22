@@ -32,6 +32,17 @@ This repo is **`kendall-order-01`** in the org-wide reading order — see
 - Audit trail / job-runs contracts and flow renderers — both are on the README's
   roadmap but marked "⬜ not yet built."
 
+## Part identity direction
+
+The Context Warehouse Control Department is the sole issuer for new governed part identities. See [KF-STD-PART-0001](docs/standards/KF-STD-PART-0001-context-warehouse-part-identity.md) and control-plane ADR-012.
+
+Until the hardened Warehouse issuance service is implemented:
+
+- treat `issuePartNumber` as a transitional internal primitive, not a product-level numbering API;
+- do not add new direct consumer calls that mint numbers;
+- preserve existing numbers and record legacy aliases during migration;
+- keep certification separate from issuance.
+
 ## Prohibited shortcuts
 
 - **Do not stand up a second registry or certification mechanism elsewhere.** If a
