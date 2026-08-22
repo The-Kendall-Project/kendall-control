@@ -50,6 +50,14 @@ import { issuePartNumber, registerAgent, listRegisteredAgents } from "@kendall/o
 | `/skill-template` | `skillBomTemplate` | `skillBomToYaml`, `skillBomToJson`, `blankSkillTemplate` | skill.bom.yaml serializer |
 | `/registry` | `registry` | `issuePartNumber`, `deriveQcPartNumber`, `deriveSkillSlug`, `controlPlaneConfigured`, `registerAgent`/`registerSkill`/`registerModule`, `listSystems`/`listRegisteredAgents`/`listRegisteredSkills`/`listRegisteredModules` | Cross-system registry SDK — agents + skills + software modules (KF-MOD). Fetch-only, graceful-degrade; `CONTROL_PLANE_URL`/`ANON_KEY` |
 
+## Part identity governance
+
+The accepted target is defined by [KF-STD-PART-0001](docs/standards/KF-STD-PART-0001-context-warehouse-part-identity.md) and control-plane ADR-012. The Context Warehouse Control Department is the sole issuer for new governed part numbers.
+
+The existing `issuePartNumber` SDK/RPC is transitional. Consumer products should not add new direct calls to it. The next registry work package must provide authenticated, class-whitelisted, atomic issue-and-register behavior, immutable part numbers, audit events, legacy aliases, and a generated part-master export for Kendall Logix.
+
+Existing issued numbers remain valid until reconciled. Do not renumber them by editing repositories.
+
 ## Roadmap
 
 Migrate the rest of the shared core here, in dependency order:
