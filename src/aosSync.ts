@@ -16,7 +16,15 @@
  *   - pack `removed` keys   → tombstone if un-edited; edited rows are kept.
  */
 import { createHash } from "node:crypto";
-import { blockKey, type AosPack, type PackBlock } from "./aos";
+// Type-only import (erased at compile) — this module keeps ZERO runtime
+// relative imports so it compiles under every consumer's module resolution
+// (bundler in the Next apps, nodenext in Foundry's packages/db).
+import type { AosPack, PackBlock } from "./aos.js";
+
+/** Natural key of a pack block — mirrors aos.ts blockKey (kept local so this
+ *  module has no runtime relative import). */
+const blockKey = (b: { kind: string; category: string; title: string }): string =>
+  `${b.kind}/${b.category}/${b.title}`;
 
 export const AOS_PACK_MANIFEST_KEY = "aos-pack";
 

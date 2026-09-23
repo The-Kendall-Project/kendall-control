@@ -1,6 +1,6 @@
 {
   "name": "@kendall/ops-core",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Kendall control plane — the shared config-driven core (BoM model, templates, agent schema, skill schema, flow) imported by every Kendall app.",
   "license": "UNLICENSED",
   "type": "module",
