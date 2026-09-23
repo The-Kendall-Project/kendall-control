@@ -69,7 +69,7 @@ export function blockKey(b: { kind: string; category: string; title: string }): 
 }
 
 export const AOS_PACK: AosPack = {
-  version: "1.0.0",
+  version: "1.1.0",
   sections: [
   {
     "code": "AOS-100",
@@ -304,7 +304,25 @@ export const AOS_PACK: AosPack = {
     "kind": "aos",
     "category": "AOS-500",
     "title": "ARPO fleet pipeline",
-    "content": "Work flows Access → Capture → Processing → Reasoning → Advisory → Agent Job → Assurance; each layer has one job and one boundary."
+    "content": "Work flows Access → Capture → Processing → Reasoning → Advisory → Agent Job → Assurance; each layer has one job and one boundary. On the factory floor this reads as a pass down the Nine Stations, from the Loading Dock to the Shipping Dock."
+  },
+  {
+    "kind": "aos",
+    "category": "AOS-500",
+    "title": "The Nine Stations",
+    "content": "Every Kendall system's agent floor uses the same nine factory stations, crosswalked to the ARPO layers: 1 Loading Dock (Access — dock connections, one credential holder per source), 2 Receiving (Capture — collectors land raw material exactly once), 3 Work Cell A — Incoming Inspection & Parts Engineering (Processing — mine and catalog typed Context Blocks), 4 Material Handling (Processing — registry, routing, drift watch), 5 Work Cell B — Reasoning Process (Reasoning), 6 Work Cell C — Job Assembly (Advisory + Agent Job — assemble drafts and recommendations), 7 Output QA (Assurance — independent audit and the human review gate), 8 Storage (warehouses, reports, the retrieval index), 9 Shipping Dock (approved writes, APIs, and MCP connections leave the building). Station names are canon — reuse them verbatim in every system's agent views."
+  },
+  {
+    "kind": "aos",
+    "category": "AOS-500",
+    "title": "Workflow views & the workflow statement",
+    "content": "Every agentic workflow is drawn the same way in every Kendall system: a left-to-right swimlane map — actor lanes (sources/systems, executing agents, assurance, the human, output) crossed with lifecycle stages, each stage tagged with its Nine Stations station — with QC gates on checked steps, a diamond for the human decision, dashed rework loops, and a storage address (table/warehouse → in-app page) on every step that lands something. Each workflow opens with a workflow statement in the canonical format: \"In <business process> for <audience>, this workflow produces <output>, so that <objective>.\" The workflow's Bill of Materials lists exactly its participating agents and repeats the statement. Reference implementation: kendall-ops /agents 'By workflow' lens."
+  },
+  {
+    "kind": "aos",
+    "category": "AOS-500",
+    "title": "Governed write rail",
+    "content": "The one path any agent output takes to change an external system: an agent PROPOSES (a WriteRequest in PENDING_APPROVAL, linked to its output and evidence) → the independent Auditor checks the governed summary → a HUMAN approves or rejects → the Write Dispatcher routes the approved write to exactly one credential-holding system agent, which executes or fails cleanly with an audit trail. Email remains draft-only even after approval — a human sends. No second write path may exist in any Kendall system."
   },
   {
     "kind": "aos",
@@ -425,6 +443,12 @@ export const AOS_PACK: AosPack = {
     "category": "AOS-700",
     "title": "Swan",
     "content": "Outreach and prospecting activity."
+  },
+  {
+    "kind": "aos",
+    "category": "AOS-700",
+    "title": "Corpus storage & retrieval standard",
+    "content": "Captured content stays in the system's Postgres database as the single system of record — full text in SourceRecord, one describing Asset Context Block per item in the owning warehouse (the card catalog), never flat files or an external vector database. Retrieval lives inside Postgres: full text is chunked (MediaChunk pattern, ~1,800 chars with overlap) with a pgvector embedding per chunk (HNSW cosine) plus a full-text-search index as the deterministic keyless fallback. Embeddings route through the AI Gateway and are permitted ONLY for public content (news, podcasts, public video transcripts) — never email, CRM, or meeting text. All consumers query one retrieval seam (retrieveMediaContext pattern) that joins hits back to catalog description + source provenance. Reference implementation: kendall-ops src/media/{chunk,embeddings,chunkStore,retrieve}.ts."
   },
   {
     "kind": "aos",
