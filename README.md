@@ -49,6 +49,7 @@ import { issuePartNumber, registerAgent, listRegisteredAgents } from "@kendall/o
 | `/skill` | `skillBomModel` | `normalizeSkillBom`, `checkSkillConformance`, `skillNumber`, `TAG_CATEGORIES`, `SkillBom`, … | Skill Context Block schema, zero deps |
 | `/skill-template` | `skillBomTemplate` | `skillBomToYaml`, `skillBomToJson`, `blankSkillTemplate` | skill.bom.yaml serializer |
 | `/registry` | `registry` | `issuePartNumber`, `deriveQcPartNumber`, `deriveSkillSlug`, `controlPlaneConfigured`, `registerAgent`/`registerSkill`/`registerModule`, `listSystems`/`listRegisteredAgents`/`listRegisteredSkills`/`listRegisteredModules` | Cross-system registry SDK — agents + skills + software modules (KF-MOD). Fetch-only, graceful-degrade; `CONTROL_PLANE_URL`/`ANON_KEY` |
+| `/objective-eval` | `objectiveEval` | `normalizeObjectiveEvalInput`, `summarizeObjectiveEval`, `recordChecks`, `readinessFlags`, `quadrant`, `renderObjectiveEvalMarkdown` | Objective-to-Eval record — the standard admin-backend eval builder core (problems, objectives and measures, AI criteria, Eval Context Block, outcome measurement). Pure, zero deps |
 
 ## Roadmap
 
@@ -62,7 +63,8 @@ Migrate the rest of the shared core here, in dependency order:
    Supabase backend (agents/skills/systems registry, `issuePartNumber`, `registerAgent`/
    `registerSkill`), from Foundry `packages/db/src/control-plane.ts` → `/registry`
 5. ⬜ **Audit + Job Runs contracts** — the observability spine (from kendall-ops `src/ops/activity.ts`)
-6. ⬜ **Flow renderers** — `AgentFlowchart`, `WorkflowMap`, `workflows` (React peer dep)
+6. ✅ **Objective-to-Eval core** — the standard eval builder record shared by every Kendall admin backend, from Kendall Factory `src/lib/objective-eval.ts` → `/objective-eval`
+7. ⬜ **Flow renderers** — `AgentFlowchart`, `WorkflowMap`, `workflows` (React peer dep)
 
 Prove each module round-trips through one consumer (SHA-pinned install → app compiles)
 before migrating the next.
